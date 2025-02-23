@@ -1,46 +1,52 @@
 # atom-3d
 
-This template should help get you started developing with Vue 3 in Vite.
+本模板可帮助你开始使用 Vue 3 和 Vite 进行开发。
 
-## Recommended IDE Setup
+## 推荐的 IDE 设置
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)（并禁用 Vetur）。
 
-## Type Support for `.vue` Imports in TS
+## TypeScript 中 `.vue` 导入的类型支持
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+TypeScript 默认无法处理 `.vue` 导入的类型信息，因此我们使用 `vue-tsc` 替代 `tsc` CLI 进行类型检查。在编辑器中，我们需要 [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) 来使 TypeScript 语言服务能够识别 `.vue` 类型。
 
-## Customize configuration
+## 自定义配置
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+查看 [Vite 配置参考](https://vite.dev/config/)。
 
-## Project Setup
+## 项目设置
+
+安装 nvm
+```zsh
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+```
 
 ```sh
 nvm install 22.14.0
 nvm use 22.14.0
+npm install -g yarn
 yarn
 ```
 
-### Compile and Hot-Reload for Development
+### 开发环境的编译和热重载
 
 ```sh
 yarn dev
 ```
 
-### Type-Check, Compile and Minify for Production
+### 生产环境的类型检查、编译和压缩
 
 ```sh
 yarn build
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+### 使用 [Vitest](https://vitest.dev/) 运行单元测试
 
 ```sh
 yarn test:unit
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+### 使用 [ESLint](https://eslint.org/) 进行代码检查
 
 ```sh
 yarn lint

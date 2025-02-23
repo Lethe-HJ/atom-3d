@@ -2,10 +2,17 @@
 import { RouterLink, RouterView } from 'vue-router'
 
 import { ref } from 'vue'
-import { ElContainer, ElHeader, ElAside, ElMain, ElCard, ElScrollbar } from 'element-plus'
-const cards = ref([
+import { ElContainer, ElAside, ElMain, ElCard, ElScrollbar } from 'element-plus'
+
+interface Card {
+  id: number
+  name?: string
+  router?: string
+}
+
+const cards = ref<Card[]>([
   { id: 111, name: 'InstanceMesh', router: '/' },
-  { id: 222 },
+  { id: 222, name: 'LiFePO4', router: '/LiFePO4' },
   { id: 333 },
   { id: 444 },
   { id: 555 },
@@ -25,13 +32,9 @@ const cards = ref([
   { id: 2312 },
 ])
 
-const selectedCard = ref(null)
-function selectCard(card: any) {
+const selectedCard = ref<Card | null>(null)
+function selectCard(card: Card) {
   selectedCard.value = card
-
-  function selectCard(card) {
-    selectedCard.value = card
-  }
 }
 </script>
 <template>
