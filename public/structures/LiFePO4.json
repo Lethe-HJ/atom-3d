@@ -1,0 +1,44 @@
+{
+  "chemical_formula": "LiFePO4",
+  "space_group": "Pnma",
+  "lattice_parameters": {
+    "a": 10.33,
+    "b": 6.01,
+    "c": 4.69,
+    "alpha": 90,
+    "beta": 90,
+    "gamma": 90
+  },
+  "atoms": [
+    {
+      "element": "Li",
+      "position": [0.0, 0.0, 0.0],
+      "wyckoff": "4a"
+    },
+    {
+      "element": "Fe",
+      "position": [0.282, 0.25, 0.974],
+      "wyckoff": "4c"
+    },
+    {
+      "element": "P",
+      "position": [0.095, 0.25, 0.418],
+      "wyckoff": "4c"
+    },
+    {
+      "element": "O1",
+      "position": [0.097, 0.25, 0.743],
+      "wyckoff": "4c"
+    },
+    {
+      "element": "O2",
+      "position": [0.457, 0.25, 0.206],
+      "wyckoff": "4c"
+    },
+    {
+      "element": "O3",
+      "position": [0.165, 0.046, 0.285],
+      "wyckoff": "8d"
+    }
+  ]
+}

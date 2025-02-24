@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { Scene } from './scene'
+import { Scene } from '../scene'
 
 /**
  * 坐标轴辅助类

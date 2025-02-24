@@ -4,6 +4,14 @@ import { Atoms, type AtomData } from './atom'
 
 export interface StructureData {
   atoms: AtomData[]
+  latticeParameters?: {
+    a: number
+    b: number
+    c: number
+    alpha: number
+    beta: number
+    gamma: number
+  }
 }
 
 /**

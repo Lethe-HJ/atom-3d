@@ -2,9 +2,11 @@ import { Scene } from './components/scene'
 import { Renderer } from './components/renderer'
 import { Camera } from './components/camera'
 import { Light } from './components/light'
-import { Axes } from './components/axes'
+import { Axes } from './components/axes/xyz'
 import { Structures, type StructureData } from './components/structures'
 import { Orbit } from './controllers/Orbit'
+import Stats from 'three/examples/jsm/libs/stats.module.js'
+import { LatticeAxes } from './components/axes/lattice'
 
 /**
  * 3D 可视化应用的核心类
@@ -12,6 +14,8 @@ import { Orbit } from './controllers/Orbit'
  * 负责初始化、渲染循环和资源管理
  */
 export class Crystal {
+  private stats?: Stats
+
   /**
    * 应用的核心组件集合
    * 包含场景、相机、渲染器等基础组件
@@ -24,13 +28,15 @@ export class Crystal {
     renderer: Renderer
     light: Light
     structures: Structures
+    latticeAxes?: LatticeAxes
   } = {
     axes: null!,
     scene: null!,
     camera: null!,
     renderer: null!,
     light: null!,
-    structures: null!
+    structures: null!,
+    latticeAxes: undefined,
   }
 
   /**
@@ -41,15 +47,20 @@ export class Crystal {
   public controllers: {
     orbit: Orbit
   } = {
-    orbit: null!
+    orbit: null!,
   }
+
+  private enableStats: boolean = import.meta.env.DEV
 
   /**
    * 创建应用实例
    * @param dom 渲染容器元素
    * @param data 结构数据
    */
-  constructor(public dom: HTMLElement, public data?: StructureData) {
+  constructor(
+    public dom: HTMLElement,
+    public data: StructureData,
+  ) {
     this.init()
   }
 
@@ -60,6 +71,9 @@ export class Crystal {
   init() {
     this.initComponents()
     this.initControllers()
+    if (this.enableStats) {
+      this.initStats()
+    }
     this.animate()
   }
 
@@ -86,6 +100,13 @@ export class Crystal {
     const structures = new Structures(this.data)
     this.components.structures = structures
     structures.addToScene(scene)
+
+    // 如果数据中包含晶格参数，则创建晶格坐标轴
+    if (this.data?.latticeParameters) {
+      const latticeAxes = new LatticeAxes(this.data.latticeParameters)
+      this.components.latticeAxes = latticeAxes
+      latticeAxes.addToScene(scene)
+    }
   }
 
   /**
@@ -107,6 +128,16 @@ export class Crystal {
   }
 
   /**
+   * 初始化性能监测
+   */
+  private initStats() {
+    this.stats = new Stats()
+    this.stats.dom.style.position = 'absolute'
+    this.stats.dom.style.top = '0px'
+    this.dom.appendChild(this.stats.dom)
+  }
+
+  /**
    * 执行场景渲染
    * 使用当前的相机视角渲染场景
    */
@@ -121,6 +152,12 @@ export class Crystal {
    */
   animate = () => {
     requestAnimationFrame(this.animate)
+    if (this.stats) {
+      this.stats.begin()
+    }
     this.render()
+    if (this.stats) {
+      this.stats.end()
+    }
   }
 }
