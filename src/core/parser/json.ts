@@ -10,17 +10,27 @@ interface LatticeParameters {
   gamma: number
 }
 
-interface AtomPosition {
-  element: string
-  position: [number, number, number]
-  wyckoff: string
+interface AtomSite {
+  species: Array<{
+    element: string
+    oxidation_state: number | null
+    occu: number
+  }>
+  abc: [number, number, number]
+  xyz: [number, number, number]
+  label: string
 }
 
 interface CrystalData {
-  chemical_formula: string
-  space_group: string
-  lattice_parameters: LatticeParameters
-  atoms: AtomPosition[]
+  lattice: {
+    a: number
+    b: number
+    c: number
+    alpha: number
+    beta: number
+    gamma: number
+  }
+  sites: AtomSite[]
 }
 
 export class JsonParser {
@@ -41,12 +51,12 @@ export class JsonParser {
     return {
       atoms,
       latticeParameters: {
-        a: this.data.lattice_parameters.a * this.scale,
-        b: this.data.lattice_parameters.b * this.scale,
-        c: this.data.lattice_parameters.c * this.scale,
-        alpha: this.data.lattice_parameters.alpha,
-        beta: this.data.lattice_parameters.beta,
-        gamma: this.data.lattice_parameters.gamma,
+        a: this.data.lattice.a * this.scale,
+        b: this.data.lattice.b * this.scale,
+        c: this.data.lattice.c * this.scale,
+        alpha: this.data.lattice.alpha,
+        beta: this.data.lattice.beta,
+        gamma: this.data.lattice.gamma,
       },
     }
   }
@@ -55,76 +65,25 @@ export class JsonParser {
    * 根据对称性生成所有原子位置
    */
   private generateAtoms(): AtomData[] {
-    const atoms: AtomData[] = []
-
-    for (const atom of this.data.atoms) {
-      const positions = this.generateSymmetryPositions(atom)
-      this.addAtomsFromPositions(atoms, atom.element, positions)
-    }
-
-    return atoms
-  }
-
-  /**
-   * 根据 Wyckoff 位置生成对称等价位置
-   */
-  private generateSymmetryPositions(atom: AtomPosition): [number, number, number][] {
-    const { position } = atom
-
-    if (atom.wyckoff === '8d') {
-      return [
-        [position[0], position[1], position[2]],
-        [-position[0], -position[1], position[2]],
-        [0.5 - position[0], 0.5 + position[1], 0.5 - position[2]],
-        [0.5 + position[0], 0.5 - position[1], 0.5 - position[2]],
-        [-position[0], position[1], -position[2]],
-        [position[0], -position[1], -position[2]],
-        [0.5 + position[0], 0.5 + position[1], 0.5 + position[2]],
-        [0.5 - position[0], 0.5 - position[1], 0.5 + position[2]],
-      ]
-    } else {
-      // 默认处理 4c 位置
-      return [
-        [position[0], position[1], position[2]],
-        [-position[0], -position[1], position[2]],
-        [0.5 - position[0], 0.5 + position[1], 0.5 - position[2]],
-        [0.5 + position[0], 0.5 - position[1], 0.5 - position[2]],
-      ]
-    }
-  }
-
-  /**
-   * 将分数坐标转换为实际坐标并添加到原子列表
-   */
-  private addAtomsFromPositions(
-    atoms: AtomData[],
-    element: string,
-    positions: [number, number, number][],
-  ) {
-    const { a, b, c } = this.data.lattice_parameters
-
-    positions.forEach((pos, index) => {
-      atoms.push({
-        name: `${element}_${index}`,
-        element,
-        position: [pos[0] * a * this.scale, pos[1] * b * this.scale, pos[2] * c * this.scale] as [
-          number,
-          number,
-          number,
-        ],
-      })
-    })
+    return this.data.sites.map((site, index) => ({
+      name: `${site.species[0].element}_${index}`,
+      element: site.species[0].element,
+      position: [site.xyz[0] * this.scale, site.xyz[1] * this.scale, site.xyz[2] * this.scale] as [
+        number,
+        number,
+        number,
+      ],
+    }))
   }
 
   /**
    * 将结构中心移到原点
    */
   private centerStructure(atoms: AtomData[]) {
-    const { a, b, c } = this.data.lattice_parameters
     const center = {
-      x: (a * this.scale) / 2,
-      y: (b * this.scale) / 2,
-      z: (c * this.scale) / 2,
+      x: (this.data.lattice.a * this.scale) / 2,
+      y: (this.data.lattice.b * this.scale) / 2,
+      z: (this.data.lattice.c * this.scale) / 2,
     }
 
     atoms.forEach((atom) => {

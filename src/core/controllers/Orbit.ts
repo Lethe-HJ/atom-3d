@@ -1,6 +1,8 @@
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type { Camera } from '../components/camera'
 import type { Renderer } from '../components/renderer'
+import { Signal } from '../utils/signal'
+import * as THREE from 'three'
 
 /**
  * 轨道控制器类
@@ -12,11 +14,18 @@ import type { Renderer } from '../components/renderer'
  */
 export class Orbit {
   /**
+   * 旋转事件信号
+   * 当场景旋转时触发，传递当前的旋转矩阵
+   */
+  readonly transformSignal = new Signal<THREE.Matrix4>()
+
+  /**
    * THREE.js 的轨道控制器实例
    * 用于处理用户输入并更新相机位置
    * @private
    */
   private object: OrbitControls
+  private lastMatrix = new THREE.Matrix4()
 
   /**
    * 创建轨道控制器实例
@@ -30,15 +39,28 @@ export class Orbit {
     public renderer: Renderer,
   ) {
     this.object = new OrbitControls(camera.object, renderer.canvasDom)
+    this.init()
+  }
+
+  private init() {
+    // 实际上是场景不动, 相机跟随控制器旋转 可以等效看作是场景旋转 旋转矩阵为控制器旋转矩阵的逆矩阵
+    const initialMatrix = new THREE.Matrix4()
+    initialMatrix.copy(this.object.object.matrix.clone().invert())
+    this.lastMatrix.copy(initialMatrix)
+
+    this.object.addEventListener('change', () => {
+      const currentMatrix = this.object.object.matrix.clone().invert()
+      if (!this.lastMatrix.equals(currentMatrix)) {
+        this.transformSignal.dispatch(currentMatrix)
+        this.lastMatrix.copy(currentMatrix)
+      }
+    })
   }
 
   /**
-   * 更新控制器状态
-   * 在每帧动画中调用此方法以更新相机位置
-   * 并重新渲染场景以显示更新后的视角
+   * 获取当前旋转矩阵
    */
-  update(): void {
-    this.object.update()
-    this.renderer.render()
+  getRotationMatrix(): THREE.Matrix4 {
+    return this.lastMatrix.clone()
   }
 }

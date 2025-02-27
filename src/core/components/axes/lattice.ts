@@ -1,8 +1,8 @@
 import * as THREE from 'three'
 import { Scene } from '../scene'
 
-export class LatticeAxes {
-  private axesGroup: THREE.Group
+export class LatticeAxes implements Atom3DObject {
+  public object: THREE.Group
   private arrowHelpers: THREE.ArrowHelper[] = []
   private labels: THREE.Sprite[] = []
 
@@ -15,11 +15,13 @@ export class LatticeAxes {
       beta: number
       gamma: number
     },
-    private scale: number = 0.2,
     private length: number = 2,
   ) {
-    this.axesGroup = new THREE.Group()
+    this.object = new THREE.Group()
+    // 将坐标轴移动到晶格中心
+    this.object.position.set(-3 * latticeParams.a, -2 * latticeParams.b, -4 * latticeParams.c)
     this.createAxes()
+    this.handleEvents()
   }
 
   /**
@@ -65,20 +67,20 @@ export class LatticeAxes {
     const arrowHelper = new THREE.ArrowHelper(
       direction,
       origin,
-      length,
+      length * 0.5,
       color,
-      length * 0.2, // 箭头头部长度
-      length * 0.1, // 箭头头部宽度
+      length * 0.1, // 箭头头部长度
+      length * 0.05, // 箭头头部宽度
     )
     this.arrowHelpers.push(arrowHelper)
-    this.axesGroup.add(arrowHelper)
+    this.object.add(arrowHelper)
 
     // 创建标签
-    const labelPos = direction.multiplyScalar(length * 1.2)
+    const labelPos = direction.multiplyScalar(length * 0.6)
     const sprite = this.createTextSprite(label, color)
     sprite.position.copy(labelPos)
     this.labels.push(sprite)
-    this.axesGroup.add(sprite)
+    this.object.add(sprite)
   }
 
   /**
@@ -108,14 +110,14 @@ export class LatticeAxes {
    * 将坐标轴添加到场景
    */
   addToScene(scene: Scene) {
-    scene.add(this.axesGroup)
+    scene.add(this.object)
   }
 
   /**
    * 从场景中移除坐标轴
    */
   removeFromScene(scene: Scene) {
-    scene.remove(this.axesGroup)
+    scene.remove(this.object)
   }
 
   /**
@@ -131,11 +133,20 @@ export class LatticeAxes {
   }) {
     this.latticeParams = params
     // 清除现有的箭头和标签
-    this.arrowHelpers.forEach((arrow) => this.axesGroup.remove(arrow))
-    this.labels.forEach((label) => this.axesGroup.remove(label))
+    this.arrowHelpers.forEach((arrow) => this.object.remove(arrow))
+    this.labels.forEach((label) => this.object.remove(label))
     this.arrowHelpers = []
     this.labels = []
     // 重新创建坐标轴
     this.createAxes()
+  }
+
+  handleEvents() {
+    window.crystal.readySignal.add(() => {
+      // 使得latticeAxes跟随场景旋转
+      window.crystal.controllers.orbit.transformSignal.add((worldMatrix) => {
+        this.object.rotation.setFromRotationMatrix(worldMatrix)
+      })
+    })
   }
 }

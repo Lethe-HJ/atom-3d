@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import type { Scene } from './scene'
 
 /**
  * 相机类
@@ -18,6 +19,22 @@ export class Camera {
    */
   constructor(fov: number, aspect: number, near: number, far: number) {
     this.object = new THREE.PerspectiveCamera(fov, aspect, near, far)
+  }
+
+  add(object: Atom3DObject) {
+    this.object.add(object.object)
+  }
+
+  remove(object: Atom3DObject) {
+    this.object.remove(object.object)
+  }
+
+  /**
+   * 将结构添加到场景中
+   * @param scene 目标场景
+   */
+  addToScene(scene: Scene): void {
+    scene.add(this.object)
   }
 
   /**

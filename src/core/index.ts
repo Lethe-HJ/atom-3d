@@ -1,12 +1,20 @@
 import { Scene } from './components/scene'
 import { Renderer } from './components/renderer'
 import { Camera } from './components/camera'
-import { Light } from './components/light'
-import { Axes } from './components/axes/xyz'
 import { Structures, type StructureData } from './components/structures'
 import { Orbit } from './controllers/Orbit'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
 import { LatticeAxes } from './components/axes/lattice'
+import * as THREE from 'three'
+import { Signal } from './utils/signal'
+import { AmbientLight } from './components/light/ambient'
+import { PointLight } from './components/light/point'
+
+declare global {
+  interface Window {
+    crystal: Crystal
+  }
+}
 
 /**
  * 3D 可视化应用的核心类
@@ -15,28 +23,28 @@ import { LatticeAxes } from './components/axes/lattice'
  */
 export class Crystal {
   private stats?: Stats
-
+  readonly readySignal = new Signal()
   /**
    * 应用的核心组件集合
    * 包含场景、相机、渲染器等基础组件
    * @public
    */
   public components: {
-    axes: Axes
+    axes: LatticeAxes
     scene: Scene
     camera: Camera
     renderer: Renderer
-    light: Light
+    ambientLight: AmbientLight
+    pointLight: PointLight
     structures: Structures
-    latticeAxes?: LatticeAxes
   } = {
     axes: null!,
     scene: null!,
     camera: null!,
     renderer: null!,
-    light: null!,
+    ambientLight: null!,
+    pointLight: null!,
     structures: null!,
-    latticeAxes: undefined,
   }
 
   /**
@@ -61,6 +69,7 @@ export class Crystal {
     public dom: HTMLElement,
     public data: StructureData,
   ) {
+    window.crystal = this
     this.init()
   }
 
@@ -74,6 +83,7 @@ export class Crystal {
     if (this.enableStats) {
       this.initStats()
     }
+    this.readySignal.dispatch()
     this.animate()
   }
 
@@ -91,21 +101,27 @@ export class Crystal {
     this.components.renderer = renderer
     renderer.mount(this.dom)
     renderer.observerResize()
-    const light = new Light()
-    this.components.light = light
-    light.addToScene(scene)
-    const axes = new Axes(2)
-    this.components.axes = axes
-    axes.addToScene(scene)
+
+    // 初始化光源
+    const ambientLight = new AmbientLight()
+    this.components.ambientLight = ambientLight
+    ambientLight.addToScene(scene)
+
+    const pointLight = new PointLight()
+    this.components.pointLight = pointLight
+    pointLight.addToCamera(camera)
+
     const structures = new Structures(this.data)
     this.components.structures = structures
     structures.addToScene(scene)
 
     // 如果数据中包含晶格参数，则创建晶格坐标轴
     if (this.data?.latticeParameters) {
-      const latticeAxes = new LatticeAxes(this.data.latticeParameters)
-      this.components.latticeAxes = latticeAxes
-      latticeAxes.addToScene(scene)
+      const axes = new LatticeAxes(this.data.latticeParameters)
+      this.components.axes = axes
+      // axes.addToScene(scene)
+      camera.add(axes)
+      camera.addToScene(scene)
     }
   }
 
@@ -123,7 +139,6 @@ export class Crystal {
    */
   initControllers() {
     const orbit = new Orbit(this.components.camera, this.components.renderer)
-    orbit.update()
     this.controllers.orbit = orbit
   }
 
@@ -159,5 +174,20 @@ export class Crystal {
     if (this.stats) {
       this.stats.end()
     }
+  }
+
+  /**
+   * 添加旋转事件监听器
+   * @param callback 旋转事件回调函数
+   */
+  onRotation(callback: (matrix: THREE.Matrix4) => void) {
+    this.controllers.orbit.transformSignal.add(callback)
+  }
+
+  /**
+   * 移除旋转事件监听器
+   */
+  removeRotationListener(callback: (matrix: THREE.Matrix4) => void) {
+    this.controllers.orbit.transformSignal.remove(callback)
   }
 }

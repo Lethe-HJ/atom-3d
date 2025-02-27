@@ -17,7 +17,7 @@ export class Atoms {
   private static geometry = new THREE.SphereGeometry(1, 32, 32)
 
   /** 缩放系数，用于调整整体显示大小 */
-  private static SCALE_FACTOR = 0.3
+  private static SCALE_FACTOR = 0.3 * 0.2
 
   /**
    * 获取元素对应的颜色
@@ -47,7 +47,7 @@ export class Atoms {
     const instances = new THREE.InstancedMesh(
       this.geometry,
       new THREE.MeshPhongMaterial(),
-      atoms.length
+      atoms.length,
     )
 
     const matrix = new THREE.Matrix4()
