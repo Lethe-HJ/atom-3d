@@ -144,8 +144,13 @@ export class LatticeAxes implements Atom3DObject {
   handleEvents() {
     window.crystal.readySignal.add(() => {
       // 使得latticeAxes跟随场景旋转
-      window.crystal.controllers.orbit.transformSignal.add((worldMatrix) => {
-        this.object.rotation.setFromRotationMatrix(worldMatrix)
+      window.crystal.controllers.orbit.rotationSignal.add((quaternion) => {
+        this.object.rotation.setFromQuaternion(quaternion)
+        // this.object.position.setFromMatrixPosition(worldMatrix)
+        // this.object.scale.setFromMatrixScale(worldMatrix)
+      })
+      window.crystal.controllers.orbit.positionSignal.add((position) => {
+        this.object.position.add(position)
       })
     })
   }

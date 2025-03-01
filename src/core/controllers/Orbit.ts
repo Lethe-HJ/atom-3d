@@ -17,8 +17,8 @@ export class Orbit {
    * 旋转事件信号
    * 当场景旋转时触发，传递当前的旋转矩阵
    */
-  readonly transformSignal = new Signal<THREE.Matrix4>()
-
+  readonly rotationSignal = new Signal<THREE.Quaternion>()
+  readonly positionSignal = new Signal<THREE.Vector3>()
   /**
    * THREE.js 的轨道控制器实例
    * 用于处理用户输入并更新相机位置
@@ -26,6 +26,9 @@ export class Orbit {
    */
   private object: OrbitControls
   private lastMatrix = new THREE.Matrix4()
+  private position = new THREE.Vector3()
+  private quaternion = new THREE.Quaternion()
+  private scale = new THREE.Vector3()
 
   /**
    * 创建轨道控制器实例
@@ -43,15 +46,26 @@ export class Orbit {
   }
 
   private init() {
-    // 实际上是场景不动, 相机跟随控制器旋转 可以等效看作是场景旋转 旋转矩阵为控制器旋转矩阵的逆矩阵
-    const initialMatrix = new THREE.Matrix4()
-    initialMatrix.copy(this.object.object.matrix.clone().invert())
-    this.lastMatrix.copy(initialMatrix)
+    this.lastMatrix = new THREE.Matrix4()
+    const currentMatrix = this.object.object.matrix
 
+    // 分解矩阵获取各个分量
+    currentMatrix.decompose(this.position, this.quaternion, this.scale)
+    console.log(this.position, this.quaternion, this.scale)
     this.object.addEventListener('change', () => {
-      const currentMatrix = this.object.object.matrix.clone().invert()
+      // 当前矩阵：分解后对旋转和位置分别求逆
+      const currentMatrix = this.object.object.matrix
+
+      // 分解矩阵获取各个分量
+      currentMatrix.decompose(this.position, this.quaternion, this.scale)
+
+      // 对旋转和位置求逆
+      this.quaternion.invert()
+      this.position.negate()
+
       if (!this.lastMatrix.equals(currentMatrix)) {
-        this.transformSignal.dispatch(currentMatrix)
+        this.rotationSignal.dispatch(this.quaternion)
+        this.positionSignal.dispatch(this.position)
         this.lastMatrix.copy(currentMatrix)
       }
     })

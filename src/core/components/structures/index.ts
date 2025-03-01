@@ -20,12 +20,12 @@ export interface StructureData {
  */
 export class Structures {
   /** 结构组，包含所有原子/分子模型 */
-  private structure: THREE.Group
+  private object: THREE.Group
   /** 原子实例集合 */
   private atomInstances: THREE.InstancedMesh | null = null
 
   constructor(data?: StructureData) {
-    this.structure = new THREE.Group()
+    this.object = new THREE.Group()
     if (data) {
       this.updateStructure(data)
     }
@@ -37,12 +37,12 @@ export class Structures {
    */
   updateStructure(data: StructureData): void {
     // 清除现有结构
-    this.structure.clear()
+    this.object.clear()
 
     // 创建或更新原子实例
     if (!this.atomInstances || this.atomInstances.count !== data.atoms.length) {
       this.atomInstances = Atoms.createInstances(data.atoms)
-      this.structure.add(this.atomInstances)
+      this.object.add(this.atomInstances)
     } else {
       Atoms.updateInstances(this.atomInstances, data.atoms)
     }
@@ -53,6 +53,6 @@ export class Structures {
    * @param scene 目标场景
    */
   addToScene(scene: Scene): void {
-    scene.add(this.structure)
+    scene.add(this.object)
   }
 }

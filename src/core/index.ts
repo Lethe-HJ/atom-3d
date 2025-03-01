@@ -5,7 +5,6 @@ import { Structures, type StructureData } from './components/structures'
 import { Orbit } from './controllers/Orbit'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
 import { LatticeAxes } from './components/axes/lattice'
-import * as THREE from 'three'
 import { Signal } from './utils/signal'
 import { AmbientLight } from './components/light/ambient'
 import { PointLight } from './components/light/point'
@@ -94,7 +93,7 @@ export class Crystal {
   initComponents() {
     const scene = new Scene(0xffffff)
     this.components.scene = scene
-    const camera = new Camera(75, 1, 0.1, 1000)
+    const camera = new Camera(10, 1)
     this.components.camera = camera
     camera.setPosition(0, 0, 5)
     const renderer = new Renderer(scene, camera)
@@ -174,20 +173,5 @@ export class Crystal {
     if (this.stats) {
       this.stats.end()
     }
-  }
-
-  /**
-   * 添加旋转事件监听器
-   * @param callback 旋转事件回调函数
-   */
-  onRotation(callback: (matrix: THREE.Matrix4) => void) {
-    this.controllers.orbit.transformSignal.add(callback)
-  }
-
-  /**
-   * 移除旋转事件监听器
-   */
-  removeRotationListener(callback: (matrix: THREE.Matrix4) => void) {
-    this.controllers.orbit.transformSignal.remove(callback)
   }
 }
